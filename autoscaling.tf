@@ -66,8 +66,8 @@ resource "aws_route_table_association" "example" {
 
 
 # Security Group
-resource "aws_security_group" "asg" {
-  name   = "terraform-asg-sg"
+resource "aws_security_group" "asg1" {
+  name   = "terraform-asg-sg1"
   vpc_id = aws_vpc.example.id
 
   ingress {
@@ -86,14 +86,14 @@ resource "aws_security_group" "asg" {
   }
 
   tags = {
-    Name = "terraform-asg-sg"
+    Name = "terraform-asg-sg1"
   }
 }
 
 
 # Launch Template
-resource "aws_launch_template" "example" {
-  name_prefix   = "terraform-asg-"
+resource "aws_launch_template" "example1" {
+  name_prefix   = "terraform-asg-1"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
 
@@ -113,7 +113,7 @@ resource "aws_launch_template" "example" {
 
 # Auto Scaling Group
 resource "aws_autoscaling_group" "example" {
-  name = "terraform-asg"
+  name = "terraform-asg1"
 
   min_size         = 1
   desired_capacity = 1
@@ -124,7 +124,7 @@ resource "aws_autoscaling_group" "example" {
   ]
 
   launch_template {
-    id      = aws_launch_template.example.id
+    id      = aws_launch_template.example1.id
     version = "$Latest"
   }
 
