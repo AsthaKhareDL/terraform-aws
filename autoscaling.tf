@@ -81,7 +81,7 @@ resource "aws_route_table_association" "asg_route_assoc_new" {
 }
 
 # Security Group
-# ============================================================
+
 
 resource "aws_security_group" "asg_security_group_new" {
   name        = "terraform-asg-sg-new"
