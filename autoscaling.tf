@@ -80,8 +80,6 @@ resource "aws_route_table_association" "asg_route_assoc_new" {
   route_table_id = aws_route_table.asg_route_table_new.id
 }
 
-
-# ============================================================
 # Security Group
 # ============================================================
 
