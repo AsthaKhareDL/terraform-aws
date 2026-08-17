@@ -8,27 +8,6 @@ resource "aws_ecs_cluster" "example" {
 
 
 # ============================================================
-# ECS Optimized Amazon Linux AMI
-# ============================================================
-
-data "aws_ami" "ecs_optimized" {
-  most_recent = true
-
-  owners = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-ecs-hvm-*-x86_64-ebs"]
-  }
-
-  filter {
-    name   = "state"
-    values = ["available"]
-  }
-}
-
-
-# ============================================================
 # IAM Role for ECS EC2 Instance
 # ============================================================
 
@@ -80,7 +59,8 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
 resource "aws_security_group" "ecs_instance" {
   name        = "terraform-ecs-instance-sg"
   description = "Security group for ECS EC2 instance"
-  vpc_id      = aws_vpc.example.id
+
+  vpc_id = data.terraform_remote_state.vpc.outputs.vpc_id
 
   egress {
     from_port   = 0
@@ -91,67 +71,5 @@ resource "aws_security_group" "ecs_instance" {
 
   tags = {
     Name = "terraform-ecs-instance-sg"
-  }
-}
-
-
-# ============================================================
-# ECS Launch Template
-# ============================================================
-
-resource "aws_launch_template" "ecs" {
-  name_prefix   = "terraform-ecs-"
-  image_id      = data.aws_ami.ecs_optimized.id
-  instance_type = "t3.micro"
-
-  iam_instance_profile {
-    name = aws_iam_instance_profile.ecs_instance_profile.name
-  }
-
-  vpc_security_group_ids = [
-    aws_security_group.ecs_instance.id
-  ]
-
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-
-    echo "ECS_CLUSTER=${aws_ecs_cluster.example.name}" >> /etc/ecs/ecs.config
-  EOF
-  )
-
-  tag_specifications {
-    resource_type = "instance"
-
-    tags = {
-      Name = "terraform-ecs-instance"
-    }
-  }
-}
-
-
-# ============================================================
-# ECS Auto Scaling Group
-# ============================================================
-
-resource "aws_autoscaling_group" "ecs" {
-  name = "terraform-ecs-asg"
-
-  min_size         = 1
-  desired_capacity = 1
-  max_size         = 1
-
-  vpc_zone_identifier = [
-    aws_subnet.asg_subnet_new.id
-  ]
-
-  launch_template {
-    id      = aws_launch_template.ecs.id
-    version = "$Latest"
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "terraform-ecs-instance"
-    propagate_at_launch = true
   }
 }
