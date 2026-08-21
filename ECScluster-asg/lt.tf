@@ -37,12 +37,17 @@ resource "aws_launch_template" "ecs" {
   ]
 
   user_data = base64encode(<<-EOF
-    #!/bin/bash
+#!/bin/bash
 
-    echo "ECS_CLUSTER=${aws_ecs_cluster.example.name}" >> /etc/ecs/ecs.config
-  EOF
+echo "ECS_CLUSTER=${aws_ecs_cluster.example.name}" >> /etc/ecs/ecs.config
+
+EOF
   )
-
+  lifecycle {
+    ignore_changes = [
+      user_data
+    ]
+  }
   tag_specifications {
     resource_type = "instance"
 
