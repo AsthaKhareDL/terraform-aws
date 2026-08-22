@@ -1,0 +1,55 @@
+name: Build and Push Nginx Images
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    name: Build and Push Nginx Images
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        id: vars
+        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Build nginx backend
+        run: |
+          docker build \
+            -t ${{ steps.login-ecr.outputs.registry }}/nginx-backend:${{ steps.vars.outputs.IMAGE_TAG }} \
+            ./nginx-app/backend
+
+      - name: Build nginx proxy
+        run: |
+          docker build \
+            -t ${{ steps.login-ecr.outputs.registry }}/nginx-proxy:${{ steps.vars.outputs.IMAGE_TAG }} \
+            ./nginx-app/proxy
+
+      - name: Push nginx backend
+        run: |
+          docker push \
+            ${{ steps.login-ecr.outputs.registry }}/nginx-backend:${{ steps.vars.outputs.IMAGE_TAG }}
+
+      - name: Push nginx proxy
+        run: |
+          docker push \
+            ${{ steps.login-ecr.outputs.registry }}/nginx-proxy:${{ steps.vars.outputs.IMAGE_TAG }}
