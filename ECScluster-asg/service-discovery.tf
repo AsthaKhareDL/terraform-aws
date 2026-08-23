@@ -20,7 +20,7 @@ resource "aws_service_discovery_service" "nginx" {
 
     dns_records {
       ttl  = 15
-      type = "A"
+      type = "SRV"
     }
   }
 }
