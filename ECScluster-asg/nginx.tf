@@ -49,7 +49,7 @@ resource "aws_ecs_service" "nginx" {
       aws_security_group.ecs_instance.id
     ]
 
-   
+
   }
 
   service_registries {
@@ -111,6 +111,6 @@ resource "aws_ecs_service" "nginx_proxy" {
       aws_security_group.ecs_instance.id
     ]
 
-   
+
   }
 }
