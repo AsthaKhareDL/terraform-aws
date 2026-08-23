@@ -17,7 +17,7 @@ resource "aws_ecs_task_definition" "nginx" {
       portMappings = [
         {
           containerPort = 80
-          hostPort = 80
+          hostPort      = 80
           protocol      = "tcp"
         }
       ]
@@ -79,7 +79,7 @@ resource "aws_ecs_task_definition" "nginx_proxy" {
       portMappings = [
         {
           containerPort = 80
-          hostPort = 8080
+          hostPort      = 8080
           protocol      = "tcp"
         }
       ]
