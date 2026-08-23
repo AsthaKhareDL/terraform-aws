@@ -4,7 +4,7 @@
 
 resource "aws_ecs_task_definition" "nginx" {
   family                   = "nginx"
-  network_mode             = "awsvpc"
+  network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
 
   container_definitions = jsonencode([
@@ -17,6 +17,7 @@ resource "aws_ecs_task_definition" "nginx" {
       portMappings = [
         {
           containerPort = 80
+          hostPort = 80
           protocol      = "tcp"
         }
       ]
@@ -65,7 +66,7 @@ resource "aws_ecs_service" "nginx" {
 
 resource "aws_ecs_task_definition" "nginx_proxy" {
   family                   = "nginx-proxy"
-  network_mode             = "awsvpc"
+  network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
 
   container_definitions = jsonencode([
@@ -78,6 +79,7 @@ resource "aws_ecs_task_definition" "nginx_proxy" {
       portMappings = [
         {
           containerPort = 80
+          hostPort = 8080
           protocol      = "tcp"
         }
       ]
