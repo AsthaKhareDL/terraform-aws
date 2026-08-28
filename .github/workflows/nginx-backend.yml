@@ -41,6 +41,9 @@ jobs:
         run: |
           docker push \
             ${{ steps.login-ecr.outputs.registry }}/nginx-backend:${{ steps.vars.outputs.IMAGE_TAG }}
+            
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
         working-directory: terraform/nginx-backend
