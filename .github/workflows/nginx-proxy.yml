@@ -48,4 +48,4 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var="image_tag=${{ steps.vars.outputs.IMAGE_TAG }}"
-```
+
