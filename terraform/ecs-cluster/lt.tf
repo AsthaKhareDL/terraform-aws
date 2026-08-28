@@ -18,14 +18,15 @@ data "aws_ami" "ecs_optimized" {
   }
 }
 
-
 # ============================================================
 # ECS Launch Template
 # ============================================================
 
 resource "aws_launch_template" "ecs" {
-  name_prefix   = "terraform-ecs-"
-  image_id      = data.aws_ami.ecs_optimized.id
+  name_prefix = "terraform-ecs-"
+
+  image_id = data.aws_ami.ecs_optimized.id
+
   instance_type = "t3.micro"
 
   iam_instance_profile {
@@ -37,17 +38,18 @@ resource "aws_launch_template" "ecs" {
   ]
 
   user_data = base64encode(<<-EOF
-#!/bin/bash
+    #!/bin/bash
 
-echo "ECS_CLUSTER=${aws_ecs_cluster.example.name}" >> /etc/ecs/ecs.config
-
-EOF
+    echo "ECS_CLUSTER=${aws_ecs_cluster.example.name}" >> /etc/ecs/ecs.config
+  EOF
   )
+
   lifecycle {
     ignore_changes = [
       user_data
     ]
   }
+
   tag_specifications {
     resource_type = "instance"
 

@@ -19,8 +19,9 @@ resource "aws_autoscaling_group" "ecs" {
   }
 
   tag {
-    key                 = "Name"
-    value               = "terraform-ecs-instance"
+    key   = "Name"
+    value = "terraform-ecs-instance"
+
     propagate_at_launch = true
   }
 }

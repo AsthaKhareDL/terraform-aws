@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket = "terra-state-aws"
-    key    = "ecs/terraform.tfstate"
+    key    = "ecs-cluster/terraform.tfstate"
     region = "us-east-1"
   }
 
@@ -17,7 +17,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-
 # ============================================================
 # Read VPC Terraform State
 # ============================================================
@@ -30,4 +29,12 @@ data "terraform_remote_state" "vpc" {
     key    = "vpc/terraform.tfstate"
     region = "us-east-1"
   }
+}
+
+# ============================================================
+# ECS Cluster
+# ============================================================
+
+resource "aws_ecs_cluster" "example" {
+  name = "terraform-ecs-cluster"
 }
