@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket = "terra-state-aws"
-    key    = "nginx-backend/terraform.tfstate"
+    key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
 
@@ -44,19 +44,26 @@ data "terraform_remote_state" "ecs_cluster" {
     region = "us-east-1"
   }
 }
+
 # ============================================================
-# Read Internal ALB Terraform State
+# Internal Application Load Balancer
 # ============================================================
 
-data "terraform_remote_state" "alb" {
-  backend = "s3"
+resource "aws_lb" "internal" {
+  name               = "terraform-internal-alb"
+  internal           = true
+  load_balancer_type = "application"
 
-  config = {
-    bucket = "terra-state-aws"
-    key    = "alb/terraform.tfstate"
-    region = "us-east-1"
+  security_groups = [
+    aws_security_group.alb.id
+  ]
+
+  subnets = data.terraform_remote_state.vpc.outputs.public_subnet_ids
+
+  enable_deletion_protection = false
+
+  tags = {
+    Name = "terraform-internal-alb"
   }
 }
-
-#===========================================================
 

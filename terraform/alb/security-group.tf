@@ -1,41 +1,28 @@
 # ============================================================
-# Security Group for ECS EC2 / Tasks
+# Security Group for Internal ALB
 # ============================================================
 
-resource "aws_security_group" "ecs_instance" {
-  name        = "terraform-ecs-instance-sg"
-  description = "Security group for ECS EC2 instance"
+resource "aws_security_group" "alb" {
+  name        = "terraform-internal-alb-sg"
+  description = "Security group for internal application load balancer"
 
   vpc_id = data.terraform_remote_state.vpc.outputs.vpc_id
 
   # ==========================================================
-  # Nginx Backend
+  # HTTP
   # ==========================================================
 
   ingress {
-    description = "HTTP for Nginx Backend"
+    description = "HTTP from VPC"
 
     from_port = 80
     to_port   = 80
 
     protocol = "tcp"
 
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # ==========================================================
-  # Nginx Proxy
-  # ==========================================================
-
-  ingress {
-    description = "HTTP 8080"
-
-    from_port = 8080
-    to_port   = 8080
-
-    protocol = "tcp"
-
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [
+      data.terraform_remote_state.vpc.outputs.vpc_cidr
+    ]
   }
 
   # ==========================================================
@@ -52,6 +39,6 @@ resource "aws_security_group" "ecs_instance" {
   }
 
   tags = {
-    Name = "terraform-ecs-instance-sg"
+    Name = "terraform-internal-alb-sg"
   }
 }

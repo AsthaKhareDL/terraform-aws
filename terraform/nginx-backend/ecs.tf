@@ -1,10 +1,11 @@
+
 # ============================================================
-# Nginx Backend ECS Task Definition
+# Nginx Backend Task Definition
 # ============================================================
 
 resource "aws_ecs_task_definition" "nginx_backend" {
   family                   = "nginx-backend"
-  network_mode             = "bridge"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
 
   container_definitions = jsonencode([
@@ -17,7 +18,6 @@ resource "aws_ecs_task_definition" "nginx_backend" {
       portMappings = [
         {
           containerPort = 80
-          hostPort      = 80
           protocol      = "tcp"
         }
       ]
@@ -25,13 +25,12 @@ resource "aws_ecs_task_definition" "nginx_backend" {
   ])
 }
 
-
 # ============================================================
-# Nginx Backend ECS Service
+# Nginx 1 ECS Service
 # ============================================================
 
-resource "aws_ecs_service" "nginx_backend" {
-  name            = "nginx-backend-service"
+resource "aws_ecs_service" "nginx1" {
+  name            = "nginx1-service"
   cluster         = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster_id
   task_definition = aws_ecs_task_definition.nginx_backend.arn
 
@@ -41,9 +40,56 @@ resource "aws_ecs_service" "nginx_backend" {
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 100
 
-  service_registries {
-    registry_arn   = data.terraform_remote_state.service_discovery.outputs.backend_service_arn
-    container_name = "nginx-backend"
-    container_port = 80
+  network_configuration {
+    subnets = [
+      data.terraform_remote_state.vpc.outputs.public_subnet_id,
+      data.terraform_remote_state.vpc.outputs.public_subnet_2_id
+    ]
+
+    security_groups = [
+      aws_security_group.backend.id
+    ]
+
+    assign_public_ip = false
+  }
+  load_balancer {
+    target_group_arn = data.terraform_remote_state.alb.outputs.nginx1_target_group_arn
+    container_name   = "nginx-backend"
+    container_port   = 80
+  }
+}
+
+# ============================================================
+# Nginx 2 ECS Service
+# ============================================================
+
+resource "aws_ecs_service" "nginx2" {
+  name            = "nginx2-service"
+  cluster         = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster_id
+  task_definition = aws_ecs_task_definition.nginx_backend.arn
+
+  desired_count = 1
+  launch_type   = "EC2"
+
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
+
+  network_configuration {
+    subnets = [
+      data.terraform_remote_state.vpc.outputs.public_subnet_id,
+      data.terraform_remote_state.vpc.outputs.public_subnet_2_id
+    ]
+
+    security_groups = [
+      aws_security_group.backend.id
+    ]
+
+    assign_public_ip = false
+  }
+
+  load_balancer {
+    target_group_arn = data.terraform_remote_state.alb.outputs.nginx2_target_group_arn
+    container_name   = "nginx-backend"
+    container_port   = 80
   }
 }

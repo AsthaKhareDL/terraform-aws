@@ -18,7 +18,7 @@ provider "aws" {
 }
 
 # ============================================================
-# Read VPC Terraform State
+# VPC
 # ============================================================
 
 data "terraform_remote_state" "vpc" {
@@ -32,7 +32,7 @@ data "terraform_remote_state" "vpc" {
 }
 
 # ============================================================
-# Read ECS Cluster Terraform State
+# ECS Cluster
 # ============================================================
 
 data "terraform_remote_state" "ecs_cluster" {
@@ -46,7 +46,7 @@ data "terraform_remote_state" "ecs_cluster" {
 }
 
 # ============================================================
-# Read Service Discovery Terraform State
+# Service Discovery
 # ============================================================
 
 data "terraform_remote_state" "service_discovery" {
@@ -55,6 +55,20 @@ data "terraform_remote_state" "service_discovery" {
   config = {
     bucket = "terra-state-aws"
     key    = "service-discovery/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
+# ============================================================
+# ALB
+# ============================================================
+
+data "terraform_remote_state" "alb" {
+  backend = "s3"
+
+  config = {
+    bucket = "terra-state-aws"
+    key    = "alb/terraform.tfstate"
     region = "us-east-1"
   }
 }
@@ -109,5 +123,7 @@ resource "aws_ecs_service" "nginx_proxy" {
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 100
 
-
+  depends_on = [
+    aws_ecs_task_definition.nginx_proxy
+  ]
 }

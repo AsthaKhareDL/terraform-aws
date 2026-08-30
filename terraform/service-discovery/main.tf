@@ -17,9 +17,9 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# ------------------------------------------------------------
+# ============================================================
 # Read VPC state
-# ------------------------------------------------------------
+# ============================================================
 
 data "terraform_remote_state" "vpc" {
   backend = "s3"
@@ -31,25 +31,42 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
-# ------------------------------------------------------------
-# Private DNS Namespace
-# ------------------------------------------------------------
+# ============================================================
+# Cloud Map Private DNS Namespace
+# ============================================================
 
-resource "aws_service_discovery_private_dns_namespace" "test" {
-  name = "test.local"
+resource "aws_service_discovery_private_dns_namespace" "backend" {
+  name = "backend.test.local"
 
   vpc = data.terraform_remote_state.vpc.outputs.vpc_id
 }
 
-# ------------------------------------------------------------
-# Backend Service Discovery
-# ------------------------------------------------------------
+# ============================================================
+# Backend 1 Service
+# ============================================================
 
-resource "aws_service_discovery_service" "nginx" {
-  name = "nginxService"
+resource "aws_service_discovery_service" "nginx1" {
+  name = "nginx1"
 
   dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.test.id
+    namespace_id = aws_service_discovery_private_dns_namespace.backend.id
+
+    dns_records {
+      ttl  = 15
+      type = "SRV"
+    }
+  }
+}
+
+# ============================================================
+# Backend 2 Service
+# ============================================================
+
+resource "aws_service_discovery_service" "nginx2" {
+  name = "nginx2"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.backend.id
 
     dns_records {
       ttl  = 15

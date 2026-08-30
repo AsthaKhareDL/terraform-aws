@@ -1,17 +1,11 @@
-# ============================================================
-# ECS Auto Scaling Group
-# ============================================================
-
 resource "aws_autoscaling_group" "ecs" {
   name = "terraform-ecs-asg"
 
-  min_size         = 1
-  desired_capacity = 1
-  max_size         = 1
+  min_size         = 2
+  desired_capacity = 2
+  max_size         = 2
 
-  vpc_zone_identifier = [
-    data.terraform_remote_state.vpc.outputs.public_subnet_id
-  ]
+  vpc_zone_identifier = data.terraform_remote_state.vpc.outputs.public_subnet_ids
 
   launch_template {
     id      = aws_launch_template.ecs.id
