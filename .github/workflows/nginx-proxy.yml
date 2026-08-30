@@ -1,4 +1,3 @@
-
 name: Nginx Proxy
 
 on:
@@ -9,6 +8,9 @@ jobs:
     name: Build, Push and Deploy Nginx Proxy
     runs-on: ubuntu-latest
 
+    env:
+      AWS_REGION: us-east-1
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,7 +20,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -41,7 +43,7 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        
+
       - name: Terraform Init
         working-directory: terraform/nginx-proxy
         run: terraform init
@@ -51,4 +53,3 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var="image_tag=${{ steps.vars.outputs.IMAGE_TAG }}"
-
